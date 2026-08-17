@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>LedgerLine</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --ink-900: #0B1220;
+    --ink-800: #101B30;
+    --ink-700: #16213A;
+    --line: #263252;
+    --paper: #F6F4EE;
+    --paper-dim: #EAE7DD;
+    --ink-on-paper: #1A1A16;
+    --muted: #8895B0;
+    --muted-on-paper: #6b6a5f;
+    --verify: #3DDC84;
+    --verify-dim: #1E5C3A;
+    --gold: #C9A227;
+    --pending: #E8B84B;
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0;
+    background: var(--ink-900);
+    background-image:
+      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,220,132,0.06), transparent),
+      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(201,162,39,0.05), transparent);
+    color: #E7E9F0;
+    font-family: 'IBM Plex Sans', sans-serif;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 100px; }
+
+  nav {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 26px 0; border-bottom: 1px solid var(--line);
+    margin-bottom: 56px;
+  }
+  .logo { display: flex; align-items: center; gap: 10px; }
+  .logo-mark {
+    width: 28px; height: 28px; border-radius: 3px;
+    background: linear-gradient(135deg, var(--verify), #1a8c52);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'IBM Plex Mono'; font-weight: 600; font-size: 13px; color: var(--ink-900);
+  }
+  .logo-name { font-family: 'IBM Plex Serif'; font-weight: 600; font-size: 17px; letter-spacing: -0.01em; }
+  .nav-tag { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+
+  .hero { padding: 8px 0 48px; }
+  .eyebrow {
+    font-family: 'IBM Plex Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
+    color: var(--verify); margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
+  }
+  .eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--verify); box-shadow: 0 0 8px var(--verify); }
+  h1 {
+    font-family: 'IBM Plex Serif'; font-weight: 600; font-size: clamp(28px, 4.2vw, 44px);
+    line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 18px; max-width: 780px;
+  }
+  h1 em { font-style: normal; color: var(--verify); }
+  .hero-sub { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.6; margin: 0; }
+
+  .toggle {
+    display: inline-flex; gap: 2px; padding: 3px; background: var(--ink-800);
+    border: 1px solid var(--line); border-radius: 8px; margin: 32px 0 40px;
+  }
+  .toggle button {
+    font-family: 'IBM Plex Mono'; font-size: 12px; letter-spacing: 0.03em; border: none;
+    background: transparent; color: var(--muted); padding: 9px 18px; border-radius: 6px;
+    cursor: pointer; transition: all 0.2s;
+  }
+  .toggle button.active { background: var(--paper); color: var(--ink-900); font-weight: 600; }
+
+  .ledger-card {
+    background: var(--paper); color: var(--ink-on-paper); border-radius: 14px;
+    padding: 40px; position: relative; overflow: hidden;
+    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
+  }
+  .ledger-card::before {
+    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
+    background: repeating-linear-gradient(90deg, var(--ink-900) 0 10px, transparent 10px 20px);
+    opacity: 0.08;
+  }
+  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
+  .card-label { font-family: 'IBM Plex Mono'; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-on-paper); margin-bottom: 6px; }
+  .card-addr { font-family: 'IBM Plex Mono'; font-size: 14px; color: var(--ink-on-paper); }
+
+  .seal {
+    width: 64px; height: 64px; border-radius: 50%;
+    border: 2px solid var(--verify-dim); background: rgba(61,220,132,0.08);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+    position: relative;
+  }
+  .seal::before {
+    content: ''; position: absolute; inset: 6px; border-radius: 50%;
+    border: 1px dashed var(--verify-dim); opacity: 0.5;
+  }
+  .seal svg { width: 22px; height: 22px; }
+
+  .score-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
+  .score-num { font-family: 'IBM Plex Serif'; font-weight: 700; font-size: 68px; line-height: 1; letter-spacing: -0.02em; }
+  .score-max { font-family: 'IBM Plex Mono'; font-size: 15px; color: var(--muted-on-paper); }
+  .score-delta {
+    font-family: 'IBM Plex Mono'; font-size: 12px; font-weight: 600; color: #1a8c52;
+    background: rgba(30,92,58,0.1); padding: 3px 8px; border-radius: 4px;
+  }
+  .score-label { font-size: 13px; color: var(--muted-on-paper); margin: 8px 0 32px; }
+
+  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--paper-dim); border-radius: 8px; overflow: hidden; }
+  .stat { background: var(--paper); padding: 18px 20px; }
+  .stat-label { font-family: 'IBM Plex Mono'; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-on-paper); margin-bottom: 6px; }
+  .stat-val { font-family: 'IBM Plex Serif'; font-size: 20px; font-weight: 600; }
+
+  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 56px 0 20px; }
+  .section-title { font-family: 'IBM Plex Serif'; font-size: 19px; font-weight: 600; }
+  .section-note { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--muted); }
+
+  .trail { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
+  .trail-row {
+    display: grid; grid-template-columns: 90px 1fr auto auto; align-items: center; gap: 16px;
+    padding: 16px 20px; border-bottom: 1px solid var(--line); font-size: 13px;
+    transition: background 0.15s;
+  }
+  .trail-row:hover { background: var(--ink-800); }
+  .trail-row:last-child { border-bottom: none; }
+  .trail-status {
+    font-family: 'IBM Plex Mono'; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
+    padding: 4px 8px; border-radius: 4px; text-align: center; font-weight: 600;
+  }
+  .trail-status.verified { background: rgba(61,220,132,0.12); color: var(--verify); }
+  .trail-status.pending { background: rgba(232,184,75,0.12); color: var(--pending); }
+  .trail-desc { color: #C7CCDA; }
+  .trail-hash { font-family: 'IBM Plex Mono'; font-size: 12px; color: var(--muted); }
+  .trail-amt { font-family: 'IBM Plex Mono'; font-size: 13px; font-weight: 500; text-align: right; }
+
+  .proof-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 56px;
+    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
+  }
+  .proof-step { padding: 22px 20px; border-right: 1px solid var(--line); position: relative; }
+  .proof-step:last-child { border-right: none; }
+  .proof-num { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--verify); margin-bottom: 10px; }
+  .proof-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
+  .proof-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+
+  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+
+  @media (max-width: 640px) {
+    .stat-grid { grid-template-columns: 1fr; }
+    .proof-strip { grid-template-columns: 1fr 1fr; }
+    .trail-row { grid-template-columns: 1fr; gap: 6px; }
+    .score-num { font-size: 48px; }
+  }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <nav>
+    <div class="logo">
+      <div class="logo-mark">L</div>
+      <div class="logo-name">LedgerLine</div>
+    </div>
+    <div class="nav-tag">CC3 TESTNET · SEPOLIA</div>
+  </nav>
+
+  <div class="hero">
+    <div class="eyebrow">Attestation live</div>
+    <h1>A credit history <em>proven</em>, not promised.</h1>
+    <p class="hero-sub">Every score here is built from repayments verified cryptographically across chains — never self-reported, never assumed.</p>
+  </div>
+
+  <div class="toggle">
+    <button class="active" onclick="setView('borrower', event)">Borrower view</button>
+    <button onclick="setView('lender', event)">Lender view</button>
+  </div>
+
+  <div id="view-borrower">
+    <div class="ledger-card">
+      <div class="card-top">
+        <div>
+          <div class="card-label">Credit profile</div>
+          <div class="card-addr">0xB0B4...F42E</div>
+        </div>
+        <div class="seal">
+          <svg viewBox="0 0 24 24" fill="none" stroke="#1a8c52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 6L9 17l-5-5"/>
+          </svg>
+        </div>
+      </div>
+
+      <div class="score-row">
+        <span class="score-num" id="scoreNum">515</span>
+        <span class="score-max">/ 1000</span>
+        <span class="score-delta">↑ +15 verified</span>
+      </div>
+      <p class="score-label">Score rises only on fully verified, completed repayments.</p>
+
+      <div class="stat-grid">
+        <div class="stat">
+          <div class="stat-label">Verified repaid</div>
+          <div class="stat-val">1,100 USDC</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Loans completed</div>
+          <div class="stat-val">1</div>
+        </div>
+        <div class="stat">
+          <div class="stat-label">Last verified</div>
+          <div class="stat-val">2 min ago</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-head">
+      <div class="section-title">Verification trail</div>
+      <div class="section-note">SEPOLIA → CC3 TESTNET</div>
+    </div>
+    <div class="trail">
+      <div class="trail-row">
+        <div class="trail-status verified">Verified</div>
+        <div class="trail-desc">Full repayment — Loan #0014</div>
+        <div class="trail-hash">0x62592d…36c7</div>
+        <div class="trail-amt">1,100 USDC</div>
+      </div>
+      <div class="trail-row">
+        <div class="trail-status verified">Verified</div>
+        <div class="trail-desc">Loan funded — Loan #0014</div>
+        <div class="trail-hash">0xa67ccd…731b</div>
+        <div class="trail-amt">1,000 USDC</div>
+      </div>
+      <div class="trail-row">
+        <div class="trail-status pending">Pending</div>
+        <div class="trail-desc">Awaiting attestation — Loan #0015</div>
+        <div class="trail-hash">0x28ae89…892e</div>
+        <div class="trail-amt">400 USDC</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-lender" style="display:none;">
+    <div class="section-head" style="margin-top:0;">
+      <div class="section-title">Borrower book</div>
+      <div class="section-note">3 ACTIVE · 1 COMPLETE</div>
+    </div>
+    <div class="trail">
+      <div class="trail-row">
+        <div class="trail-status verified">515 / 1000</div>
+        <div class="trail-desc">0xB0B4…F42E — 1 loan completed</div>
+        <div class="trail-hash">Last verified 2 min ago</div>
+        <div class="trail-amt">1,100 USDC</div>
+      </div>
+      <div class="trail-row">
+        <div class="trail-status pending">500 / 1000</div>
+        <div class="trail-desc">0x7C1A…9D02 — new profile</div>
+        <div class="trail-hash">Repayment pending</div>
+        <div class="trail-amt">400 USDC</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="proof-strip">
+    <div class="proof-step">
+      <div class="proof-num">01</div>
+      <div class="proof-title">Repayment occurs</div>
+      <div class="proof-desc">On Sepolia — the source chain</div>
+    </div>
+    <div class="proof-step">
+      <div class="proof-num">02</div>
+      <div class="proof-title">Proof generated</div>
+      <div class="proof-desc">Merkle + continuity proof via Attestcoin</div>
+    </div>
+    <div class="proof-step">
+      <div class="proof-num">03</div>
+      <div class="proof-title">Verified on-chain</div>
+      <div class="proof-desc">Creditcoin's Block Prover, no oracle</div>
+    </div>
+    <div class="proof-step">
+      <div class="proof-num">04</div>
+      <div class="proof-title">Score updates</div>
+      <div class="proof-desc">Automatic, tamper-proof</div>
+    </div>
+  </div>
+
+  <footer>
+    <span>LedgerLine — BUIDL CTC 2026 Fall</span>
+    <span>Attestcoin Protocol</span>
+  </footer>
+
+</div>
+
+<script>
+  function setView(v, evt) {
+    document.getElementById('view-borrower').style.display = v === 'borrower' ? 'block' : 'none';
+    document.getElementById('view-lender').style.display = v === 'lender' ? 'block' : 'none';
+    document.querySelectorAll('.toggle button').forEach(b => b.classList.remove('active'));
+    evt.target.classList.add('active');
+  }
+
+  window.addEventListener('DOMContentLoaded', () => {
+    const el = document.getElementById('scoreNum');
+    const target = 515;
+    let cur = 480;
+    const step = () => {
+      cur += 3;
+      if (cur >= target) { el.textContent = target; return; }
+      el.textContent = cur;
+      requestAnimationFrame(step);
+    };
+    setTimeout(step, 300);
+  });
+</script>
+</body>
+</html>
