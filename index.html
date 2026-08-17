@@ -8,284 +8,248 @@
 <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
   :root {
-    --ink-900: #0B1220;
-    --ink-800: #101B30;
-    --ink-700: #16213A;
-    --line: #263252;
-    --paper: #F6F4EE;
-    --paper-dim: #EAE7DD;
-    --ink-on-paper: #1A1A16;
-    --muted: #8895B0;
-    --muted-on-paper: #6b6a5f;
-    --verify: #3DDC84;
-    --verify-dim: #1E5C3A;
-    --gold: #C9A227;
-    --pending: #E8B84B;
+    --ink-900:#0B1220; --ink-800:#101B30; --ink-700:#16213A; --line:#263252;
+    --paper:#F6F4EE; --paper-dim:#EAE7DD; --ink-on-paper:#1A1A16;
+    --muted:#8895B0; --muted-on-paper:#6b6a5f;
+    --verify:#3DDC84; --verify-dim:#1E5C3A;
+    --pending:#E8B84B; --pending-dim:#7a5f1e;
+    --danger:#E85B5B; --danger-dim:#7a2a2a;
   }
-
   * { box-sizing: border-box; }
-  html { scroll-behavior: smooth; }
-
   body {
-    margin: 0;
-    background: var(--ink-900);
-    background-image:
-      radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,220,132,0.06), transparent),
-      radial-gradient(ellipse 700px 500px at 100% 10%, rgba(201,162,39,0.05), transparent);
-    color: #E7E9F0;
-    font-family: 'IBM Plex Sans', sans-serif;
-    -webkit-font-smoothing: antialiased;
+    margin:0; background:var(--ink-900);
+    background-image: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,220,132,0.06), transparent),
+                       radial-gradient(ellipse 700px 500px at 100% 10%, rgba(201,162,39,0.05), transparent);
+    color:#E7E9F0; font-family:'IBM Plex Sans',sans-serif; -webkit-font-smoothing:antialiased;
+  }
+  .wrap { max-width: 1080px; margin:0 auto; padding:0 24px 100px; }
+
+  .sim-panel {
+    position: sticky; top:0; z-index: 50; background: var(--pending-dim);
+    color: #FFF3D6; font-family:'IBM Plex Mono'; font-size:11px;
+    padding: 8px 24px; display:flex; align-items:center; gap:14px; flex-wrap:wrap;
+    border-bottom: 1px solid rgba(0,0,0,0.3);
+  }
+  .sim-panel b { letter-spacing:0.05em; }
+  .sim-panel select {
+    background: rgba(0,0,0,0.25); color:#FFF3D6; border:1px solid rgba(255,255,255,0.25);
+    border-radius:4px; padding:4px 8px; font-family:'IBM Plex Mono'; font-size:11px;
   }
 
-  .wrap { max-width: 1080px; margin: 0 auto; padding: 0 24px 100px; }
+  nav { display:flex; align-items:center; justify-content:space-between; padding:22px 0; border-bottom:1px solid var(--line); margin-bottom:40px; }
+  .logo { display:flex; align-items:center; gap:10px; }
+  .logo-mark { width:28px;height:28px;border-radius:3px; background:linear-gradient(135deg,var(--verify),#1a8c52); display:flex;align-items:center;justify-content:center; font-family:'IBM Plex Mono';font-weight:600;font-size:13px;color:var(--ink-900); }
+  .logo-name { font-family:'IBM Plex Serif'; font-weight:600; font-size:17px; letter-spacing:-0.01em; }
+  .wallet-btn { font-family:'IBM Plex Mono'; font-size:12px; border:1px solid var(--line); background:var(--ink-800); color:#E7E9F0; padding:9px 16px; border-radius:7px; cursor:pointer; display:flex; align-items:center; gap:8px; }
+  .wallet-btn.connected { border-color: var(--verify-dim); color: var(--verify); }
+  .wallet-dot { width:7px;height:7px;border-radius:50%; background: var(--muted); }
+  .wallet-btn.connected .wallet-dot { background: var(--verify); box-shadow:0 0 6px var(--verify); }
 
-  nav {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 26px 0; border-bottom: 1px solid var(--line);
-    margin-bottom: 56px;
-  }
-  .logo { display: flex; align-items: center; gap: 10px; }
-  .logo-mark {
-    width: 28px; height: 28px; border-radius: 3px;
-    background: linear-gradient(135deg, var(--verify), #1a8c52);
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'IBM Plex Mono'; font-weight: 600; font-size: 13px; color: var(--ink-900);
-  }
-  .logo-name { font-family: 'IBM Plex Serif'; font-weight: 600; font-size: 17px; letter-spacing: -0.01em; }
-  .nav-tag { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--muted); letter-spacing: 0.04em; }
+  .tabs { display:flex; gap:2px; padding:3px; background:var(--ink-800); border:1px solid var(--line); border-radius:8px; margin-bottom:36px; width:fit-content; }
+  .tabs button { font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:0.02em; border:none; background:transparent; color:var(--muted); padding:9px 16px; border-radius:6px; cursor:pointer; }
+  .tabs button.active { background:var(--paper); color:var(--ink-900); font-weight:600; }
 
-  .hero { padding: 8px 0 48px; }
-  .eyebrow {
-    font-family: 'IBM Plex Mono'; font-size: 11px; letter-spacing: 0.14em; text-transform: uppercase;
-    color: var(--verify); margin-bottom: 18px; display: flex; align-items: center; gap: 8px;
-  }
-  .eyebrow::before { content: ''; width: 6px; height: 6px; border-radius: 50%; background: var(--verify); box-shadow: 0 0 8px var(--verify); }
-  h1 {
-    font-family: 'IBM Plex Serif'; font-weight: 600; font-size: clamp(28px, 4.2vw, 44px);
-    line-height: 1.12; letter-spacing: -0.015em; margin: 0 0 18px; max-width: 780px;
-  }
-  h1 em { font-style: normal; color: var(--verify); }
-  .hero-sub { font-size: 15px; color: var(--muted); max-width: 560px; line-height: 1.6; margin: 0; }
+  h1 { font-family:'IBM Plex Serif'; font-weight:600; font-size:26px; letter-spacing:-0.01em; margin:0 0 6px; }
+  .subtitle { color:var(--muted); font-size:13px; margin:0 0 28px; }
 
-  .toggle {
-    display: inline-flex; gap: 2px; padding: 3px; background: var(--ink-800);
-    border: 1px solid var(--line); border-radius: 8px; margin: 32px 0 40px;
+  .card { background:var(--paper); color:var(--ink-on-paper); border-radius:14px; padding:32px; box-shadow:0 24px 50px -20px rgba(0,0,0,0.5); }
+  .empty-state, .gate-state {
+    border:1.5px dashed var(--line); border-radius:12px; padding:48px 32px; text-align:center;
   }
-  .toggle button {
-    font-family: 'IBM Plex Mono'; font-size: 12px; letter-spacing: 0.03em; border: none;
-    background: transparent; color: var(--muted); padding: 9px 18px; border-radius: 6px;
-    cursor: pointer; transition: all 0.2s;
-  }
-  .toggle button.active { background: var(--paper); color: var(--ink-900); font-weight: 600; }
+  .gate-state.danger { border-color: var(--danger-dim); }
+  .gate-icon { font-size:26px; margin-bottom:14px; }
+  .gate-title { font-family:'IBM Plex Serif'; font-size:17px; font-weight:600; margin-bottom:8px; }
+  .gate-desc { font-size:13px; color:var(--muted); max-width:380px; margin:0 auto 20px; line-height:1.6; }
+  .btn { font-family:'IBM Plex Mono'; font-size:13px; font-weight:600; border:none; border-radius:7px; padding:11px 22px; cursor:pointer; }
+  .btn-primary { background: var(--verify); color:#0B1220; }
+  .btn-outline { background:transparent; border:1px solid var(--line); color:#E7E9F0; }
+  .btn:disabled { opacity:0.4; cursor:not-allowed; }
 
-  .ledger-card {
-    background: var(--paper); color: var(--ink-on-paper); border-radius: 14px;
-    padding: 40px; position: relative; overflow: hidden;
-    box-shadow: 0 30px 60px -20px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.03);
-  }
-  .ledger-card::before {
-    content: ''; position: absolute; top: 0; left: 0; right: 0; height: 6px;
-    background: repeating-linear-gradient(90deg, var(--ink-900) 0 10px, transparent 10px 20px);
-    opacity: 0.08;
-  }
-  .card-top { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 30px; }
-  .card-label { font-family: 'IBM Plex Mono'; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-on-paper); margin-bottom: 6px; }
-  .card-addr { font-family: 'IBM Plex Mono'; font-size: 14px; color: var(--ink-on-paper); }
+  .search-row { display:flex; gap:10px; margin-bottom: 28px; }
+  .search-row input { flex:1; background:var(--ink-800); border:1px solid var(--line); color:#E7E9F0; border-radius:7px; padding:12px 14px; font-family:'IBM Plex Mono'; font-size:13px; }
 
-  .seal {
-    width: 64px; height: 64px; border-radius: 50%;
-    border: 2px solid var(--verify-dim); background: rgba(61,220,132,0.08);
-    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
-    position: relative;
-  }
-  .seal::before {
-    content: ''; position: absolute; inset: 6px; border-radius: 50%;
-    border: 1px dashed var(--verify-dim); opacity: 0.5;
-  }
-  .seal svg { width: 22px; height: 22px; }
+  .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px; }
+  .card-label { font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted-on-paper); margin-bottom:6px; }
+  .card-addr { font-family:'IBM Plex Mono'; font-size:14px; }
+  .seal { width:58px;height:58px;border-radius:50%; border:2px solid var(--verify-dim); background:rgba(61,220,132,0.08); display:flex;align-items:center;justify-content:center; position:relative; flex-shrink:0; }
+  .seal::before { content:''; position:absolute; inset:6px; border-radius:50%; border:1px dashed var(--verify-dim); opacity:0.5; }
+  .score-row { display:flex; align-items:baseline; gap:12px; margin-bottom:4px; }
+  .score-num { font-family:'IBM Plex Serif'; font-weight:700; font-size:56px; line-height:1; }
+  .score-max { font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted-on-paper); }
+  .score-label { font-size:13px; color:var(--muted-on-paper); margin:8px 0 26px; }
+  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--paper-dim); border-radius:8px; overflow:hidden; }
+  .stat { background:var(--paper); padding:16px 18px; }
+  .stat-label { font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted-on-paper); margin-bottom:6px; }
+  .stat-val { font-family:'IBM Plex Serif'; font-size:19px; font-weight:600; }
 
-  .score-row { display: flex; align-items: baseline; gap: 14px; margin-bottom: 4px; }
-  .score-num { font-family: 'IBM Plex Serif'; font-weight: 700; font-size: 68px; line-height: 1; letter-spacing: -0.02em; }
-  .score-max { font-family: 'IBM Plex Mono'; font-size: 15px; color: var(--muted-on-paper); }
-  .score-delta {
-    font-family: 'IBM Plex Mono'; font-size: 12px; font-weight: 600; color: #1a8c52;
-    background: rgba(30,92,58,0.1); padding: 3px 8px; border-radius: 4px;
-  }
-  .score-label { font-size: 13px; color: var(--muted-on-paper); margin: 8px 0 32px; }
+  .section-head { display:flex; align-items:baseline; justify-content:space-between; margin:44px 0 16px; }
+  .section-title { font-family:'IBM Plex Serif'; font-size:17px; font-weight:600; }
+  .section-note { font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted); }
 
-  .stat-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1px; background: var(--paper-dim); border-radius: 8px; overflow: hidden; }
-  .stat { background: var(--paper); padding: 18px 20px; }
-  .stat-label { font-family: 'IBM Plex Mono'; font-size: 10px; letter-spacing: 0.06em; text-transform: uppercase; color: var(--muted-on-paper); margin-bottom: 6px; }
-  .stat-val { font-family: 'IBM Plex Serif'; font-size: 20px; font-weight: 600; }
+  .trail { border:1px solid var(--line); border-radius:10px; overflow:hidden; }
+  .trail-row { display:grid; grid-template-columns:96px 1fr auto auto; align-items:center; gap:16px; padding:15px 18px; border-bottom:1px solid var(--line); font-size:13px; }
+  .trail-row:last-child { border-bottom:none; }
+  .status-pill { font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:0.04em; text-transform:uppercase; padding:4px 8px; border-radius:4px; text-align:center; font-weight:600; }
+  .status-pill.verified { background:rgba(61,220,132,0.12); color:var(--verify); }
+  .status-pill.pending { background:rgba(232,184,75,0.12); color:var(--pending); }
+  .trail-desc { color:#C7CCDA; }
+  .trail-hash { font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); }
+  .trail-amt { font-family:'IBM Plex Mono'; font-size:13px; text-align:right; }
 
-  .section-head { display: flex; align-items: baseline; justify-content: space-between; margin: 56px 0 20px; }
-  .section-title { font-family: 'IBM Plex Serif'; font-size: 19px; font-weight: 600; }
-  .section-note { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--muted); }
+  .form-grid { display:grid; gap:16px; margin-bottom:22px; }
+  .field label { display:block; font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--muted-on-paper); margin-bottom:6px; }
+  .field input { width:100%; border:1px solid var(--paper-dim); background:#fff; border-radius:6px; padding:10px 12px; font-family:'IBM Plex Mono'; font-size:13px; color:var(--ink-on-paper); }
+  .field-hint { font-size:11px; color:var(--muted-on-paper); margin-top:4px; }
 
-  .trail { border: 1px solid var(--line); border-radius: 10px; overflow: hidden; }
-  .trail-row {
-    display: grid; grid-template-columns: 90px 1fr auto auto; align-items: center; gap: 16px;
-    padding: 16px 20px; border-bottom: 1px solid var(--line); font-size: 13px;
-    transition: background 0.15s;
-  }
-  .trail-row:hover { background: var(--ink-800); }
-  .trail-row:last-child { border-bottom: none; }
-  .trail-status {
-    font-family: 'IBM Plex Mono'; font-size: 10px; letter-spacing: 0.04em; text-transform: uppercase;
-    padding: 4px 8px; border-radius: 4px; text-align: center; font-weight: 600;
-  }
-  .trail-status.verified { background: rgba(61,220,132,0.12); color: var(--verify); }
-  .trail-status.pending { background: rgba(232,184,75,0.12); color: var(--pending); }
-  .trail-desc { color: #C7CCDA; }
-  .trail-hash { font-family: 'IBM Plex Mono'; font-size: 12px; color: var(--muted); }
-  .trail-amt { font-family: 'IBM Plex Mono'; font-size: 13px; font-weight: 500; text-align: right; }
+  .tx-banner { border-radius:10px; padding:16px 18px; margin-bottom:20px; display:flex; align-items:center; gap:12px; font-size:13px; }
+  .tx-banner.wait { background: rgba(232,184,75,0.1); border:1px solid var(--pending-dim); color:var(--pending); }
+  .tx-banner.ok { background: rgba(61,220,132,0.1); border:1px solid var(--verify-dim); color:var(--verify); }
+  .spinner { width:14px;height:14px; border-radius:50%; border:2px solid currentColor; border-top-color:transparent; animation: spin 0.8s linear infinite; flex-shrink:0; }
+  @keyframes spin { to { transform: rotate(360deg); } }
 
-  .proof-strip {
-    display: grid; grid-template-columns: repeat(4, 1fr); gap: 0; margin-top: 56px;
-    border: 1px solid var(--line); border-radius: 10px; overflow: hidden;
-  }
-  .proof-step { padding: 22px 20px; border-right: 1px solid var(--line); position: relative; }
-  .proof-step:last-child { border-right: none; }
-  .proof-num { font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--verify); margin-bottom: 10px; }
-  .proof-title { font-size: 13px; font-weight: 600; margin-bottom: 6px; }
-  .proof-desc { font-size: 12px; color: var(--muted); line-height: 1.5; }
+  .loan-card { border:1px solid var(--line); border-radius:10px; padding:18px 20px; margin-bottom:12px; }
+  .loan-card-top { display:flex; justify-content:space-between; align-items:center; margin-bottom:10px; }
+  .loan-id { font-family:'IBM Plex Mono'; font-size:12px; color:var(--muted); }
+  .loan-status { font-family:'IBM Plex Mono'; font-size:11px; padding:3px 9px; border-radius:4px; font-weight:600; }
+  .loan-status.funded { background: rgba(232,184,75,0.12); color:var(--pending); }
+  .loan-status.repaid { background: rgba(61,220,132,0.12); color:var(--verify); }
+  .loan-detail-row { display:flex; justify-content:space-between; font-size:13px; padding:4px 0; color:#C7CCDA; }
 
-  footer { margin-top: 64px; padding-top: 24px; border-top: 1px solid var(--line); font-family: 'IBM Plex Mono'; font-size: 11px; color: var(--muted); display: flex; justify-content: space-between; }
+  footer { margin-top:60px; padding-top:22px; border-top:1px solid var(--line); font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted); display:flex; justify-content:space-between; }
 
-  @media (max-width: 640px) {
-    .stat-grid { grid-template-columns: 1fr; }
-    .proof-strip { grid-template-columns: 1fr 1fr; }
-    .trail-row { grid-template-columns: 1fr; gap: 6px; }
-    .score-num { font-size: 48px; }
-  }
+  .hidden { display:none !important; }
+  @media (max-width:640px){ .stat-grid{grid-template-columns:1fr;} .trail-row{grid-template-columns:1fr;gap:6px;} }
 </style>
 </head>
 <body>
-<div class="wrap">
 
+<div class="sim-panel">
+  <b>SIMULATE (design reference only — not shipped)</b>
+  <label>Wallet: <select id="simWallet" onchange="applySimState()">
+    <option value="disconnected">Disconnected</option>
+    <option value="unapproved">Connected — unapproved lender</option>
+    <option value="lender">Connected — approved lender</option>
+    <option value="borrower-active">Connected — borrower, active loan</option>
+    <option value="borrower-empty">Connected — borrower, no loans</option>
+  </select></label>
+</div>
+
+<div class="wrap">
   <nav>
-    <div class="logo">
-      <div class="logo-mark">L</div>
-      <div class="logo-name">LedgerLine</div>
-    </div>
-    <div class="nav-tag">CC3 TESTNET · SEPOLIA</div>
+    <div class="logo"><div class="logo-mark">L</div><div class="logo-name">LedgerLine</div></div>
+    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()"><span class="wallet-dot"></span><span id="walletBtnText">Connect wallet</span></button>
   </nav>
 
-  <div class="hero">
-    <div class="eyebrow">Attestation live</div>
-    <h1>A credit history <em>proven</em>, not promised.</h1>
-    <p class="hero-sub">Every score here is built from repayments verified cryptographically across chains — never self-reported, never assumed.</p>
+  <div class="tabs">
+    <button class="active" onclick="setTab('explore', event)">Explore</button>
+    <button onclick="setTab('profile', event)">My profile</button>
+    <button onclick="setTab('lender', event)">Lender portal</button>
+    <button onclick="setTab('borrower', event)">Borrower portal</button>
   </div>
 
-  <div class="toggle">
-    <button class="active" onclick="setView('borrower', event)">Borrower view</button>
-    <button onclick="setView('lender', event)">Lender view</button>
+  <div id="tab-explore">
+    <h1>Look up a credit profile</h1>
+    <p class="subtitle">Public, verifiable, no wallet required — this is a public ledger.</p>
+    <div class="search-row">
+      <input type="text" value="0xB0B4...F42E" placeholder="Paste a wallet address">
+      <button class="btn btn-primary">Look up</button>
+    </div>
+    <div id="explore-result"></div>
   </div>
 
-  <div id="view-borrower">
-    <div class="ledger-card">
-      <div class="card-top">
-        <div>
-          <div class="card-label">Credit profile</div>
-          <div class="card-addr">0xB0B4...F42E</div>
-        </div>
-        <div class="seal">
-          <svg viewBox="0 0 24 24" fill="none" stroke="#1a8c52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M20 6L9 17l-5-5"/>
-          </svg>
-        </div>
-      </div>
-
-      <div class="score-row">
-        <span class="score-num" id="scoreNum">515</span>
-        <span class="score-max">/ 1000</span>
-        <span class="score-delta">↑ +15 verified</span>
-      </div>
-      <p class="score-label">Score rises only on fully verified, completed repayments.</p>
-
-      <div class="stat-grid">
-        <div class="stat">
-          <div class="stat-label">Verified repaid</div>
-          <div class="stat-val">1,100 USDC</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Loans completed</div>
-          <div class="stat-val">1</div>
-        </div>
-        <div class="stat">
-          <div class="stat-label">Last verified</div>
-          <div class="stat-val">2 min ago</div>
-        </div>
-      </div>
+  <div id="tab-profile" class="hidden">
+    <h1>My credit profile</h1>
+    <p class="subtitle">Auto-filled from your connected wallet.</p>
+    <div id="profile-not-connected" class="gate-state hidden">
+      <div class="gate-icon">🔒</div>
+      <div class="gate-title">Connect your wallet</div>
+      <div class="gate-desc">Connect to view your own credit profile without typing your address.</div>
+      <button class="btn btn-primary" onclick="connectWallet()">Connect wallet</button>
     </div>
-
-    <div class="section-head">
-      <div class="section-title">Verification trail</div>
-      <div class="section-note">SEPOLIA → CC3 TESTNET</div>
+    <div id="profile-empty" class="empty-state hidden">
+      <div class="gate-icon">📄</div>
+      <div class="gate-title">No credit history yet</div>
+      <div class="gate-desc">Your profile appears here once you complete your first verified repayment.</div>
     </div>
-    <div class="trail">
-      <div class="trail-row">
-        <div class="trail-status verified">Verified</div>
-        <div class="trail-desc">Full repayment — Loan #0014</div>
-        <div class="trail-hash">0x62592d…36c7</div>
-        <div class="trail-amt">1,100 USDC</div>
-      </div>
-      <div class="trail-row">
-        <div class="trail-status verified">Verified</div>
-        <div class="trail-desc">Loan funded — Loan #0014</div>
-        <div class="trail-hash">0xa67ccd…731b</div>
-        <div class="trail-amt">1,000 USDC</div>
-      </div>
-      <div class="trail-row">
-        <div class="trail-status pending">Pending</div>
-        <div class="trail-desc">Awaiting attestation — Loan #0015</div>
-        <div class="trail-hash">0x28ae89…892e</div>
-        <div class="trail-amt">400 USDC</div>
-      </div>
-    </div>
+    <div id="profile-content" class="hidden"></div>
   </div>
 
-  <div id="view-lender" style="display:none;">
-    <div class="section-head" style="margin-top:0;">
-      <div class="section-title">Borrower book</div>
-      <div class="section-note">3 ACTIVE · 1 COMPLETE</div>
+  <div id="tab-lender" class="hidden">
+    <h1>Lender portal</h1>
+    <p class="subtitle">Register loans and track your borrower book.</p>
+
+    <div id="lender-not-connected" class="gate-state hidden">
+      <div class="gate-icon">🔒</div>
+      <div class="gate-title">Connect your wallet</div>
+      <div class="gate-desc">Lenders must connect a wallet to register loans on Sepolia.</div>
+      <button class="btn btn-primary" onclick="connectWallet()">Connect wallet</button>
     </div>
-    <div class="trail">
-      <div class="trail-row">
-        <div class="trail-status verified">515 / 1000</div>
-        <div class="trail-desc">0xB0B4…F42E — 1 loan completed</div>
-        <div class="trail-hash">Last verified 2 min ago</div>
-        <div class="trail-amt">1,100 USDC</div>
+
+    <div id="lender-unapproved" class="gate-state danger hidden">
+      <div class="gate-icon">⛔</div>
+      <div class="gate-title">This wallet isn't an approved lender</div>
+      <div class="gate-desc">Only lenders approved by the LedgerLine registry can originate loans. Contact the registry admin to request approval for 0x9F2A...C71B.</div>
+      <button class="btn btn-outline">Request approval</button>
+    </div>
+
+    <div id="lender-content" class="hidden">
+      <div id="lender-tx-banner"></div>
+      <div class="card" style="margin-bottom:32px;">
+        <div class="card-label" style="margin-bottom:16px;">Register a new loan</div>
+        <div class="form-grid">
+          <div class="field"><label>Borrower address</label><input type="text" placeholder="0x..."></div>
+          <div class="field"><label>Loan amount</label><input type="text" value="1000"></div>
+          <div class="field"><label>Expected repayment</label><input type="text" value="1100"></div>
+          <div class="field"><label>Deadline</label><input type="text" value="30 days">
+            <div class="field-hint">Must be in the future — the contract reverts otherwise.</div>
+          </div>
+        </div>
+        <button class="btn btn-primary" onclick="simulateLoanRegistration()">Register loan</button>
       </div>
-      <div class="trail-row">
-        <div class="trail-status pending">500 / 1000</div>
-        <div class="trail-desc">0x7C1A…9D02 — new profile</div>
-        <div class="trail-hash">Repayment pending</div>
-        <div class="trail-amt">400 USDC</div>
+
+      <div class="section-head" style="margin-top:0;">
+        <div class="section-title">Your loan book</div>
+        <div class="section-note">2 ACTIVE · 1 COMPLETE</div>
+      </div>
+      <div class="loan-card">
+        <div class="loan-card-top"><span class="loan-id">Loan #0014</span><span class="loan-status repaid">Repaid</span></div>
+        <div class="loan-detail-row"><span>Borrower</span><span>0xB0B4...F42E</span></div>
+        <div class="loan-detail-row"><span>Amount / Expected</span><span>1,000 / 1,100 USDC</span></div>
+      </div>
+      <div class="loan-card">
+        <div class="loan-card-top"><span class="loan-id">Loan #0015</span><span class="loan-status funded">Funded</span></div>
+        <div class="loan-detail-row"><span>Borrower</span><span>0x7C1A...9D02</span></div>
+        <div class="loan-detail-row"><span>Amount / Expected</span><span>400 / 440 USDC</span></div>
       </div>
     </div>
   </div>
 
-  <div class="proof-strip">
-    <div class="proof-step">
-      <div class="proof-num">01</div>
-      <div class="proof-title">Repayment occurs</div>
-      <div class="proof-desc">On Sepolia — the source chain</div>
+  <div id="tab-borrower" class="hidden">
+    <h1>Borrower portal</h1>
+    <p class="subtitle">Repay active loans and watch your score update.</p>
+
+    <div id="borrower-not-connected" class="gate-state hidden">
+      <div class="gate-icon">🔒</div>
+      <div class="gate-title">Connect your wallet</div>
+      <div class="gate-desc">Connect to see loans registered to your address and repay them.</div>
+      <button class="btn btn-primary" onclick="connectWallet()">Connect wallet</button>
     </div>
-    <div class="proof-step">
-      <div class="proof-num">02</div>
-      <div class="proof-title">Proof generated</div>
-      <div class="proof-desc">Merkle + continuity proof via Attestcoin</div>
+
+    <div id="borrower-empty" class="empty-state hidden">
+      <div class="gate-icon">📭</div>
+      <div class="gate-title">No active loans</div>
+      <div class="gate-desc">Loans registered to your address by an approved lender will appear here.</div>
     </div>
-    <div class="proof-step">
-      <div class="proof-num">03</div>
-      <div class="proof-title">Verified on-chain</div>
-      <div class="proof-desc">Creditcoin's Block Prover, no oracle</div>
-    </div>
-    <div class="proof-step">
-      <div class="proof-num">04</div>
-      <div class="proof-title">Score updates</div>
-      <div class="proof-desc">Automatic, tamper-proof</div>
+
+    <div id="borrower-content" class="hidden">
+      <div id="borrower-tx-banner"></div>
+      <div class="loan-card">
+        <div class="loan-card-top"><span class="loan-id">Loan #0015</span><span class="loan-status funded" id="repayLoanStatus">Funded</span></div>
+        <div class="loan-detail-row"><span>Lender</span><span>0x9F2A...C71B</span></div>
+        <div class="loan-detail-row"><span>Amount owed</span><span>440 USDC</span></div>
+        <div class="loan-detail-row"><span>Deadline</span><span>24 days remaining</span></div>
+        <button class="btn btn-primary" style="margin-top:12px;" id="repayBtn" onclick="simulateRepayFlow()">Repay 440 USDC</button>
+      </div>
     </div>
   </div>
 
@@ -293,29 +257,112 @@
     <span>LedgerLine — BUIDL CTC 2026 Fall</span>
     <span>Attestcoin Protocol</span>
   </footer>
-
 </div>
 
 <script>
-  function setView(v, evt) {
-    document.getElementById('view-borrower').style.display = v === 'borrower' ? 'block' : 'none';
-    document.getElementById('view-lender').style.display = v === 'lender' ? 'block' : 'none';
-    document.querySelectorAll('.toggle button').forEach(b => b.classList.remove('active'));
-    evt.target.classList.add('active');
+let connected = false;
+let currentTab = 'explore';
+
+const profileCardHTML = (isYou) => `
+  <div class="card">
+    <div class="card-top">
+      <div><div class="card-label">${isYou ? 'Your profile' : 'Credit profile'}</div><div class="card-addr">0xB0B4...F42E</div></div>
+      <div class="seal"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1a8c52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
+    </div>
+    <div class="score-row"><span class="score-num">515</span><span class="score-max">/ 1000</span></div>
+    <p class="score-label">Score rises only on fully verified, completed repayments.</p>
+    <div class="stat-grid">
+      <div class="stat"><div class="stat-label">Verified repaid</div><div class="stat-val">1,100 USDC</div></div>
+      <div class="stat"><div class="stat-label">Loans completed</div><div class="stat-val">1</div></div>
+      <div class="stat"><div class="stat-label">Last verified</div><div class="stat-val">2 min ago</div></div>
+    </div>
+  </div>
+  <div class="section-head"><div class="section-title">Verification trail</div><div class="section-note">SEPOLIA → CC3 TESTNET</div></div>
+  <div class="trail">
+    <div class="trail-row"><span class="status-pill verified">Verified</span><span class="trail-desc">Full repayment — Loan #0014</span><span class="trail-hash">0x62592d…36c7</span><span class="trail-amt">1,100 USDC</span></div>
+    <div class="trail-row"><span class="status-pill verified">Verified</span><span class="trail-desc">Loan funded — Loan #0014</span><span class="trail-hash">0xa67ccd…731b</span><span class="trail-amt">1,000 USDC</span></div>
+  </div>
+`;
+document.getElementById('explore-result').innerHTML = profileCardHTML(false);
+
+function setTab(t, evt) {
+  currentTab = t;
+  ['explore','profile','lender','borrower'].forEach(id => document.getElementById('tab-'+id).classList.toggle('hidden', id !== t));
+  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
+  evt.target.classList.add('active');
+  renderGates();
+}
+
+function connectWallet() {
+  const sel = document.getElementById('simWallet');
+  if (sel.value === 'disconnected') sel.value = 'lender';
+  applySimState();
+}
+
+function applySimState() {
+  const state = document.getElementById('simWallet').value;
+  connected = state !== 'disconnected';
+  const btn = document.getElementById('walletBtn');
+  const btnText = document.getElementById('walletBtnText');
+  btn.classList.toggle('connected', connected);
+  btnText.textContent = connected ? '0x9F2A...C71B' : 'Connect wallet';
+  window.simState = state;
+  renderGates();
+}
+
+function show(id, on) { document.getElementById(id).classList.toggle('hidden', !on); }
+
+function renderGates() {
+  const state = window.simState || 'disconnected';
+
+  show('profile-not-connected', currentTab === 'profile' && !connected);
+  show('profile-empty', currentTab === 'profile' && connected && state === 'borrower-empty');
+  show('profile-content', currentTab === 'profile' && connected && state !== 'borrower-empty');
+  if (currentTab === 'profile' && connected && state !== 'borrower-empty') {
+    document.getElementById('profile-content').innerHTML = profileCardHTML(true);
   }
 
-  window.addEventListener('DOMContentLoaded', () => {
-    const el = document.getElementById('scoreNum');
-    const target = 515;
-    let cur = 480;
-    const step = () => {
-      cur += 3;
-      if (cur >= target) { el.textContent = target; return; }
-      el.textContent = cur;
-      requestAnimationFrame(step);
-    };
-    setTimeout(step, 300);
-  });
+  show('lender-not-connected', currentTab === 'lender' && !connected);
+  show('lender-unapproved', currentTab === 'lender' && connected && state === 'unapproved');
+  show('lender-content', currentTab === 'lender' && connected && state === 'lender');
+
+  show('borrower-not-connected', currentTab === 'borrower' && !connected);
+  show('borrower-empty', currentTab === 'borrower' && connected && state === 'borrower-empty');
+  show('borrower-content', currentTab === 'borrower' && connected && (state === 'borrower-active'));
+}
+
+function simulateLoanRegistration() {
+  const banner = document.getElementById('lender-tx-banner');
+  banner.innerHTML = `<div class="tx-banner wait"><div class="spinner"></div>Confirm in wallet…</div>`;
+  setTimeout(() => {
+    banner.innerHTML = `<div class="tx-banner wait"><div class="spinner"></div>Submitting to Sepolia…</div>`;
+    setTimeout(() => {
+      banner.innerHTML = `<div class="tx-banner ok">✓ Loan #0016 registered on Sepolia.</div>`;
+    }, 1400);
+  }, 1000);
+}
+
+function simulateRepayFlow() {
+  const banner = document.getElementById('borrower-tx-banner');
+  const btn = document.getElementById('repayBtn');
+  const status = document.getElementById('repayLoanStatus');
+  btn.disabled = true;
+
+  banner.innerHTML = `<div class="tx-banner wait"><div class="spinner"></div>Confirm repayment in wallet…</div>`;
+  setTimeout(() => {
+    banner.innerHTML = `<div class="tx-banner wait"><div class="spinner"></div>Repayment sent — waiting for Sepolia confirmation…</div>`;
+    setTimeout(() => {
+      status.textContent = 'Repaid'; status.className = 'loan-status repaid';
+      banner.innerHTML = `<div class="tx-banner wait"><div class="spinner"></div>Repaid on Sepolia. Waiting on Attestcoin proof (~15s) before your score updates on Creditcoin…</div>`;
+      setTimeout(() => {
+        banner.innerHTML = `<div class="tx-banner ok">✓ Verified on Creditcoin — your score just moved. <a href="#" onclick="setTab('profile', event); return false;" style="color:inherit;">View profile →</a></div>`;
+        btn.textContent = 'Repaid';
+      }, 2200);
+    }, 1600);
+  }, 1000);
+}
+
+applySimState();
 </script>
 </body>
 </html>
