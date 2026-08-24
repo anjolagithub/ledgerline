@@ -77,6 +77,24 @@
   .hash-link { color:var(--text-dim); text-decoration:none; }
   .hash-link:hover { color:var(--text); text-decoration:underline; }
   .log-empty { padding:40px 20px; text-align:center; color:var(--text-faint); font-family:'JetBrains Mono'; font-size:12px; }
+
+  .addr-link { color: var(--text-dim); text-decoration: none; }
+  .addr-link:hover { color: var(--green); }
+  .explorer-tbd { color: var(--text-faint); font-size: 9.5px; }
+  .btn-outline { background: transparent; border: 1px solid var(--border-bright); color: var(--text); }
+  .btn-outline.connected { border-color: var(--green); color: var(--green); }
+
+  .action-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; margin-top: 24px; }
+  .action-panel { background: var(--panel); border: 1px solid var(--border); border-radius: 10px; padding: 22px 20px; }
+  .action-title { font-size: 13px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+  .action-chain { font-family:'JetBrains Mono'; font-size: 9.5px; color: var(--text-faint); font-weight: 400; border: 1px solid var(--border); border-radius: 4px; padding: 2px 6px; }
+  .action-status { font-family:'JetBrains Mono'; font-size: 11px; margin-bottom: 12px; min-height: 16px; color: var(--text-dim); }
+  .action-status.ok { color: var(--green); }
+  .action-status.err { color: var(--red); }
+  .action-form { display: grid; gap: 8px; margin-bottom: 14px; }
+  .action-form input { background: var(--panel-alt); border: 1px solid var(--border); color: var(--text); border-radius: 6px; padding: 9px 11px; font-family:'JetBrains Mono'; font-size: 12px; }
+  .action-form input:focus { outline: none; border-color: var(--border-bright); }
+  .btn:disabled { opacity: 0.4; cursor: not-allowed; }
 </style>
 </head>
 <body>
@@ -105,10 +123,17 @@
     <div class="sidebar-block">
       <div class="sidebar-label">Deployed Contracts</div>
       <div class="addr-list">
-        <div><span class="addr-chain">SEPOLIA</span> SourceRegistry<br>0x1Af3...C6fF</div><br>
-        <div><span class="addr-chain">SEPOLIA</span> Settlement<br>0xa00D...7297</div><br>
-        <div><span class="addr-chain">CC3</span> Registry<br>0xde83...F0F</div><br>
-        <div><span class="addr-chain">CC3</span> ProofVerifier<br>0x859C...4494</div>
+        <div><span class="addr-chain">SEPOLIA</span> SourceRegistry<br><a class="addr-link" href="https://sepolia.etherscan.io/address/0x1Af3D4ED1D2592DdAD9c13A3004006c9785eC6fF" target="_blank">0x1Af3...C6fF ↗</a></div><br>
+        <div><span class="addr-chain">SEPOLIA</span> Settlement<br><a class="addr-link" href="https://sepolia.etherscan.io/address/0xa00DeE06b5d8DD4889683d2d526a744C2Bd67297" target="_blank">0xa00D...7297 ↗</a></div><br>
+        <div><span class="addr-chain">CC3</span> Registry<br>0xde83...F0F <span class="explorer-tbd">(explorer link pending)</span></div><br>
+        <div><span class="addr-chain">CC3</span> ProofVerifier<br>0x859C...4494 <span class="explorer-tbd">(explorer link pending)</span></div>
+      </div>
+    </div>
+
+    <div class="sidebar-block">
+      <div class="wallet-status" id="walletStatus">
+        <div class="sidebar-label">Wallet</div>
+        <button class="btn btn-outline" id="walletBtn" onclick="connectWallet()" style="width:100%;">Connect wallet</button>
       </div>
     </div>
   </aside>
@@ -154,6 +179,31 @@
           <thead><tr><th>Chain</th><th>Event</th><th>Tx Hash</th><th>Status</th></tr></thead>
           <tbody id="logBody"><tr><td colspan="4" class="log-empty">Loading attestation log...</td></tr></tbody>
         </table>
+      </div>
+    </div>
+
+    <div class="action-grid">
+      <div class="action-panel">
+        <div class="action-title">Lender — Register Loan <span class="action-chain">Sepolia</span></div>
+        <div id="lenderStatus" class="action-status"></div>
+        <div class="action-form">
+          <input type="text" id="borrowerAddr" placeholder="Borrower address">
+          <input type="text" id="loanAmount" placeholder="Amount" value="100">
+          <input type="text" id="expectedRepay" placeholder="Expected repayment" value="110">
+          <input type="text" id="deadlineDays" placeholder="Deadline (days)" value="30">
+        </div>
+        <button class="btn" id="registerBtn" onclick="registerLoan()" disabled>Connect wallet to register</button>
+      </div>
+
+      <div class="action-panel">
+        <div class="action-title">Borrower — Repay Loan <span class="action-chain">Sepolia</span></div>
+        <div id="borrowerStatus" class="action-status"></div>
+        <div class="action-form">
+          <input type="text" id="repayLoanId" placeholder="Loan ID" value="1">
+          <input type="text" id="repayLenderAddr" placeholder="Lender address">
+          <input type="text" id="repayAmount" placeholder="Amount" value="110">
+        </div>
+        <button class="btn" id="repayBtn" onclick="repayLoan()" disabled>Connect wallet to repay</button>
       </div>
     </div>
   </main>
@@ -267,6 +317,86 @@ async function loadLog() {
     console.error(e);
     body.innerHTML = '<tr><td colspan="4" class="log-empty">Query failed: ' + e.message + '</td></tr>';
   }
+}
+
+const DEMO_TOKEN_ADDR = "0xF77cEEa40d44C4b7c5dFF7DD31dc0E281FaFeE55";
+const SEPOLIA_CHAIN_ID = 11155111;
+const SOURCE_REGISTRY_WRITE_ABI = [
+  "function approvedLenders(address) view returns (bool)",
+  "function registerLoan(address borrower, address withToken, uint256 loanAmount, uint256 expectedRepaymentAmount, uint256 deadlineTimestamp) returns (uint256)"
+];
+const SETTLEMENT_WRITE_ABI = ["function repayLoan(uint256 loanId, address lender, address token, uint256 amount)"];
+const TOKEN_ABI = ["function approve(address spender, uint256 amount) returns (bool)"];
+
+let signer = null, userAddress = null;
+
+async function connectWallet() {
+  if (!window.ethereum) { alert('No injected wallet found (e.g. MetaMask). Install one to register or repay loans.'); return; }
+  try {
+    const provider = new ethers.BrowserProvider(window.ethereum);
+    await provider.send("eth_requestAccounts", []);
+    signer = await provider.getSigner();
+    userAddress = await signer.getAddress();
+    const btn = document.getElementById('walletBtn');
+    btn.textContent = userAddress.slice(0,6)+'...'+userAddress.slice(-4);
+    btn.classList.add('connected');
+    document.getElementById('registerBtn').disabled = false;
+    document.getElementById('registerBtn').textContent = 'Register loan';
+    document.getElementById('repayBtn').disabled = false;
+    document.getElementById('repayBtn').textContent = 'Approve + Repay';
+    checkLenderApproval();
+  } catch (e) { console.error(e); alert('Connection failed: ' + e.message); }
+}
+
+async function checkLenderApproval() {
+  try {
+    const provider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+    const reg = new ethers.Contract(SOURCE_REGISTRY_ADDR, SOURCE_REGISTRY_WRITE_ABI, provider);
+    const approved = await reg.approvedLenders(userAddress);
+    const status = document.getElementById('lenderStatus');
+    status.textContent = approved ? 'Approved lender ✓' : 'Not an approved lender — registration will revert';
+    status.className = 'action-status ' + (approved ? 'ok' : 'err');
+  } catch (e) { console.error(e); }
+}
+
+async function registerLoan() {
+  const status = document.getElementById('lenderStatus');
+  try {
+    const net = await signer.provider.getNetwork();
+    if (Number(net.chainId) !== SEPOLIA_CHAIN_ID) { status.textContent = 'Switch wallet to Sepolia.'; status.className='action-status err'; return; }
+    const borrower = document.getElementById('borrowerAddr').value.trim();
+    const amount = ethers.parseUnits(document.getElementById('loanAmount').value, 18);
+    const expected = ethers.parseUnits(document.getElementById('expectedRepay').value, 18);
+    const deadline = Math.floor(Date.now()/1000) + Number(document.getElementById('deadlineDays').value)*86400;
+    status.textContent = 'Confirm in wallet...'; status.className = 'action-status';
+    const reg = new ethers.Contract(SOURCE_REGISTRY_ADDR, SOURCE_REGISTRY_WRITE_ABI, signer);
+    const tx = await reg.registerLoan(borrower, DEMO_TOKEN_ADDR, amount, expected, deadline);
+    status.textContent = 'Submitted: ' + tx.hash;
+    const r = await tx.wait();
+    status.textContent = 'Registered ✓ ' + r.hash; status.className = 'action-status ok';
+    loadLog();
+  } catch (e) { console.error(e); status.textContent = 'Failed: ' + (e.reason || e.message); status.className = 'action-status err'; }
+}
+
+async function repayLoan() {
+  const status = document.getElementById('borrowerStatus');
+  try {
+    const net = await signer.provider.getNetwork();
+    if (Number(net.chainId) !== SEPOLIA_CHAIN_ID) { status.textContent = 'Switch wallet to Sepolia.'; status.className='action-status err'; return; }
+    const loanId = document.getElementById('repayLoanId').value.trim();
+    const lender = document.getElementById('repayLenderAddr').value.trim();
+    const amount = ethers.parseUnits(document.getElementById('repayAmount').value, 18);
+    status.textContent = 'Approving token spend...'; status.className = 'action-status';
+    const token = new ethers.Contract(DEMO_TOKEN_ADDR, TOKEN_ABI, signer);
+    await (await token.approve(SOURCE_SETTLEMENT_ADDR, amount)).wait();
+    status.textContent = 'Submitting repayment...';
+    const settlement = new ethers.Contract(SOURCE_SETTLEMENT_ADDR, SETTLEMENT_WRITE_ABI, signer);
+    const tx = await settlement.repayLoan(loanId, lender, DEMO_TOKEN_ADDR, amount);
+    status.textContent = 'Submitted: ' + tx.hash;
+    const r = await tx.wait();
+    status.textContent = 'Repaid ✓ ' + r.hash + ' — run the relayer to verify and update the score.'; status.className = 'action-status ok';
+    loadLog();
+  } catch (e) { console.error(e); status.textContent = 'Failed: ' + (e.reason || e.message); status.className = 'action-status err'; }
 }
 
 checkNetworks();
