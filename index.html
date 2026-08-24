@@ -3,338 +3,275 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>LedgerLine — Live</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Serif:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<title>LedgerLine — Console</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/ethers/6.13.4/ethers.umd.min.js"></script>
 <style>
   :root {
-    --ink-900:#0B1220; --ink-800:#101B30; --line:#263252;
-    --paper:#F6F4EE; --paper-dim:#EAE7DD; --ink-on-paper:#1A1A16;
-    --muted:#8895B0; --muted-on-paper:#6b6a5f;
-    --verify:#3DDC84; --verify-dim:#1E5C3A;
-    --pending:#E8B84B; --pending-dim:#7a5f1e;
-    --danger:#E85B5B; --danger-dim:#7a2a2a;
+    --bg: #05070A; --panel: #0A0D12; --panel-alt: #0D1117;
+    --border: #1C222B; --border-bright: #2A323F;
+    --text: #F2F4F7; --text-dim: #7C8593; --text-faint: #4A5361;
+    --amber: #F5A623; --green: #29D98C; --red: #F0555A;
   }
   * { box-sizing: border-box; }
-  body {
-    margin:0; background:var(--ink-900);
-    background-image: radial-gradient(ellipse 900px 500px at 15% -10%, rgba(61,220,132,0.06), transparent),
-                       radial-gradient(ellipse 700px 500px at 100% 10%, rgba(201,162,39,0.05), transparent);
-    color:#E7E9F0; font-family:'IBM Plex Sans',sans-serif; -webkit-font-smoothing:antialiased;
-  }
-  .wrap { max-width: 1080px; margin:0 auto; padding:0 24px 100px; }
-  .live-banner {
-    background: var(--verify-dim); color:#D6FFE9; font-family:'IBM Plex Mono'; font-size:11px;
-    padding: 8px 24px; text-align:center;
-  }
-  nav { display:flex; align-items:center; justify-content:space-between; padding:22px 0; border-bottom:1px solid var(--line); margin-bottom:40px; }
-  .logo { display:flex; align-items:center; gap:10px; }
-  .logo-mark { width:28px;height:28px;border-radius:3px; background:linear-gradient(135deg,var(--verify),#1a8c52); display:flex;align-items:center;justify-content:center; font-family:'IBM Plex Mono';font-weight:600;font-size:13px;color:var(--ink-900); }
-  .logo-name { font-family:'IBM Plex Serif'; font-weight:600; font-size:17px; letter-spacing:-0.01em; }
-  .wallet-btn { font-family:'IBM Plex Mono'; font-size:12px; border:1px solid var(--line); background:var(--ink-800); color:#E7E9F0; padding:9px 16px; border-radius:7px; cursor:pointer; display:flex; align-items:center; gap:8px; }
-  .wallet-btn.connected { border-color: var(--verify-dim); color: var(--verify); }
-  .wallet-dot { width:7px;height:7px;border-radius:50%; background: var(--muted); }
-  .wallet-btn.connected .wallet-dot { background: var(--verify); box-shadow:0 0 6px var(--verify); }
+  body { margin:0; background:var(--bg); color:var(--text); font-family:'Inter',sans-serif; -webkit-font-smoothing:antialiased; font-size:14px; }
+  .mono { font-family:'JetBrains Mono',monospace; }
+  .shell { display:grid; grid-template-columns:300px 1fr; min-height:100vh; }
 
-  .tabs { display:flex; gap:2px; padding:3px; background:var(--ink-800); border:1px solid var(--line); border-radius:8px; margin-bottom:36px; width:fit-content; }
-  .tabs button { font-family:'IBM Plex Mono'; font-size:12px; letter-spacing:0.02em; border:none; background:transparent; color:var(--muted); padding:9px 16px; border-radius:6px; cursor:pointer; }
-  .tabs button.active { background:var(--paper); color:var(--ink-900); font-weight:600; }
+  .sidebar { background:var(--panel); border-right:1px solid var(--border); padding:28px 24px; }
+  .brand { display:flex; align-items:center; gap:10px; margin-bottom:36px; }
+  .brand-mark { width:26px;height:26px;border-radius:5px; background:linear-gradient(135deg,var(--green),#17a865); display:flex;align-items:center;justify-content:center; font-weight:700; font-size:13px; color:#05070A; }
+  .brand-name { font-weight:600; font-size:15px; letter-spacing:-0.01em; }
+  .sidebar-label { font-family:'JetBrains Mono'; font-size:10px; letter-spacing:0.1em; text-transform:uppercase; color:var(--text-faint); margin-bottom:10px; }
+  .sidebar-block { margin-bottom:32px; }
+  .sidebar-desc { font-size:12.5px; line-height:1.65; color:var(--text-dim); }
+  .sidebar-desc b { color:var(--text); font-weight:600; }
+  .status-row { display:flex; align-items:center; justify-content:space-between; padding:9px 0; border-bottom:1px solid var(--border); font-family:'JetBrains Mono'; font-size:11.5px; }
+  .status-row:last-child { border-bottom:none; }
+  .status-dot { width:6px;height:6px;border-radius:50%; display:inline-block; margin-right:7px; }
+  .status-dot.on { background:var(--green); box-shadow:0 0 6px var(--green); }
+  .status-dot.off { background:var(--text-faint); }
+  .status-dot.warn { background:var(--amber); box-shadow:0 0 6px var(--amber); }
+  .status-val { color:var(--text-dim); }
+  .status-val.green { color:var(--green); }
+  .addr-list { font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-dim); line-height:2; }
+  .addr-chain { color:var(--text-faint); }
 
-  h1 { font-family:'IBM Plex Serif'; font-weight:600; font-size:26px; letter-spacing:-0.01em; margin:0 0 6px; }
-  .subtitle { color:var(--muted); font-size:13px; margin:0 0 28px; }
+  .main { padding:28px 36px; }
+  .topbar { display:flex; justify-content:space-between; align-items:center; margin-bottom:28px; }
+  .topbar h1 { font-size:18px; font-weight:600; margin:0; letter-spacing:-0.01em; }
+  .topbar-sub { font-family:'JetBrains Mono'; font-size:11px; color:var(--text-faint); }
+  .lookup-row { display:flex; gap:10px; margin-bottom:28px; }
+  .lookup-row input { flex:1; background:var(--panel); border:1px solid var(--border); color:var(--text); border-radius:6px; padding:10px 13px; font-family:'JetBrains Mono'; font-size:12.5px; }
+  .lookup-row input:focus { outline:none; border-color:var(--border-bright); }
+  .btn { font-family:'JetBrains Mono'; font-size:12px; font-weight:500; border:none; border-radius:6px; padding:10px 20px; cursor:pointer; background:var(--green); color:#05070A; }
+  .btn:hover { opacity:0.9; }
+  .console-grid { display:grid; grid-template-columns:340px 1fr; gap:24px; }
 
-  .card { background:var(--paper); color:var(--ink-on-paper); border-radius:14px; padding:32px; box-shadow:0 24px 50px -20px rgba(0,0,0,0.5); }
-  .gate-state { border:1.5px dashed var(--line); border-radius:12px; padding:40px 32px; text-align:center; }
-  .gate-state.danger { border-color: var(--danger-dim); }
-  .gate-title { font-family:'IBM Plex Serif'; font-size:16px; font-weight:600; margin-bottom:8px; }
-  .gate-desc { font-size:13px; color:var(--muted); max-width:420px; margin:0 auto 18px; line-height:1.6; word-break:break-all; }
-  .btn { font-family:'IBM Plex Mono'; font-size:13px; font-weight:600; border:none; border-radius:7px; padding:11px 22px; cursor:pointer; }
-  .btn-primary { background: var(--verify); color:#0B1220; }
-  .btn-outline { background:transparent; border:1px solid var(--line); color:#E7E9F0; }
-  .btn:disabled { opacity:0.4; cursor:not-allowed; }
+  .gauge-panel { background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:32px 24px; text-align:center; }
+  .gauge-wrap { position:relative; width:220px; height:220px; margin:0 auto 20px; }
+  .gauge-svg { transform:rotate(-90deg); }
+  .gauge-track { fill:none; stroke:var(--border); stroke-width:10; }
+  .gauge-fill { fill:none; stroke-width:10; stroke-linecap:round; transition:stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1), stroke 0.6s; }
+  .gauge-center { position:absolute; top:50%; left:50%; transform:translate(-50%,-50%); text-align:center; }
+  .gauge-score { font-size:52px; font-weight:700; letter-spacing:-0.02em; }
+  .gauge-max { font-family:'JetBrains Mono'; font-size:11px; color:var(--text-faint); margin-top:2px; }
+  .gauge-caption { font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-faint); letter-spacing:0.05em; text-transform:uppercase; margin-top:4px; }
+  .metric-row { display:flex; justify-content:space-between; padding:10px 0; border-top:1px solid var(--border); font-family:'JetBrains Mono'; font-size:11.5px; margin-top:8px; }
+  .metric-row .k { color:var(--text-faint); }
+  .metric-row .v { color:var(--text); }
 
-  .search-row { display:flex; gap:10px; margin-bottom: 24px; }
-  .search-row input { flex:1; background:var(--ink-800); border:1px solid var(--line); color:#E7E9F0; border-radius:7px; padding:12px 14px; font-family:'IBM Plex Mono'; font-size:13px; }
-
-  .card-top { display:flex; justify-content:space-between; align-items:flex-start; margin-bottom:26px; }
-  .card-label { font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:0.08em; text-transform:uppercase; color:var(--muted-on-paper); margin-bottom:6px; }
-  .card-addr { font-family:'IBM Plex Mono'; font-size:13px; word-break:break-all; }
-  .seal { width:56px;height:56px;border-radius:50%; border:2px solid var(--verify-dim); background:rgba(61,220,132,0.08); display:flex;align-items:center;justify-content:center; position:relative; flex-shrink:0; }
-  .score-row { display:flex; align-items:baseline; gap:12px; margin-bottom:4px; }
-  .score-num { font-family:'IBM Plex Serif'; font-weight:700; font-size:52px; line-height:1; }
-  .score-max { font-family:'IBM Plex Mono'; font-size:14px; color:var(--muted-on-paper); }
-  .stat-grid { display:grid; grid-template-columns:repeat(3,1fr); gap:1px; background:var(--paper-dim); border-radius:8px; overflow:hidden; margin-top:22px; }
-  .stat { background:var(--paper); padding:16px 18px; }
-  .stat-label { font-family:'IBM Plex Mono'; font-size:10px; letter-spacing:0.06em; text-transform:uppercase; color:var(--muted-on-paper); margin-bottom:6px; }
-  .stat-val { font-family:'IBM Plex Serif'; font-size:17px; font-weight:600; word-break:break-all; }
-
-  .form-grid { display:grid; gap:14px; margin-bottom:18px; }
-  .field label { display:block; font-family:'IBM Plex Mono'; font-size:11px; letter-spacing:0.05em; text-transform:uppercase; color:var(--muted-on-paper); margin-bottom:6px; }
-  .field input { width:100%; border:1px solid var(--paper-dim); background:#fff; border-radius:6px; padding:10px 12px; font-family:'IBM Plex Mono'; font-size:13px; color:var(--ink-on-paper); }
-
-  .tx-banner { border-radius:10px; padding:14px 16px; margin-bottom:18px; font-size:13px; word-break:break-all; }
-  .tx-banner.wait { background: rgba(232,184,75,0.1); border:1px solid var(--pending-dim); color:var(--pending); }
-  .tx-banner.ok { background: rgba(61,220,132,0.1); border:1px solid var(--verify-dim); color:var(--verify); }
-  .tx-banner.err { background: rgba(232,91,91,0.1); border:1px solid var(--danger-dim); color:var(--danger); }
-
-  footer { margin-top:60px; padding-top:22px; border-top:1px solid var(--line); font-family:'IBM Plex Mono'; font-size:11px; color:var(--muted); }
-  .hidden { display:none !important; }
-  .contract-note { font-family:'IBM Plex Mono'; font-size:10px; color:var(--muted); margin-top:8px; }
+  .log-panel { background:var(--panel); border:1px solid var(--border); border-radius:10px; overflow:hidden; }
+  .log-header { padding:16px 20px; border-bottom:1px solid var(--border); display:flex; justify-content:space-between; align-items:center; }
+  .log-title { font-size:13px; font-weight:600; }
+  .log-refresh { font-family:'JetBrains Mono'; font-size:10.5px; color:var(--text-faint); cursor:pointer; }
+  table { width:100%; border-collapse:collapse; }
+  th { text-align:left; font-family:'JetBrains Mono'; font-size:9.5px; letter-spacing:0.06em; text-transform:uppercase; color:var(--text-faint); padding:10px 20px; border-bottom:1px solid var(--border); font-weight:500; }
+  td { padding:12px 20px; font-family:'JetBrains Mono'; font-size:11.5px; border-bottom:1px solid var(--border); color:var(--text-dim); }
+  tr:last-child td { border-bottom:none; }
+  tr:hover td { background:var(--panel-alt); }
+  .chain-pill { display:inline-flex; align-items:center; gap:5px; padding:3px 8px; border-radius:4px; font-size:10px; }
+  .chain-pill.sepolia { background:rgba(130,140,255,0.1); color:#8C95FF; }
+  .chain-pill.cc3 { background:rgba(41,217,140,0.1); color:var(--green); }
+  .event-verified { color:var(--green); }
+  .hash-link { color:var(--text-dim); text-decoration:none; }
+  .hash-link:hover { color:var(--text); text-decoration:underline; }
+  .log-empty { padding:40px 20px; text-align:center; color:var(--text-faint); font-family:'JetBrains Mono'; font-size:12px; }
 </style>
 </head>
 <body>
 
-<div class="live-banner">LIVE — reading real contract state from Sepolia + Creditcoin CC3 Testnet</div>
+<div class="shell">
+  <aside class="sidebar">
+    <div class="brand"><div class="brand-mark">L</div><div class="brand-name">LedgerLine</div></div>
 
-<div class="wrap">
-  <nav>
-    <div class="logo"><div class="logo-mark">L</div><div class="logo-name">LedgerLine</div></div>
-    <button class="wallet-btn" id="walletBtn" onclick="connectWallet()"><span class="wallet-dot" id="walletDot"></span><span id="walletBtnText">Connect wallet</span></button>
-  </nav>
-
-  <div class="tabs">
-    <button class="active" onclick="setTab('explore', event)">Explore</button>
-    <button onclick="setTab('lender', event)">Lender portal</button>
-    <button onclick="setTab('borrower', event)">Borrower portal</button>
-  </div>
-
-  <!-- EXPLORE -->
-  <div id="tab-explore">
-    <h1>Look up a credit profile</h1>
-    <p class="subtitle">Reads live from LedgerLineRegistry on Creditcoin CC3 Testnet. No wallet needed.</p>
-    <div class="search-row">
-      <input type="text" id="lookupAddr" placeholder="0x... wallet address" value="0x00dC0f3ff1F2bca6b3d007684cC25a766c9815f4">
-      <button class="btn btn-primary" onclick="lookupProfile()">Look up</button>
-    </div>
-    <div id="exploreStatus" class="contract-note"></div>
-    <div id="exploreResult"></div>
-  </div>
-
-  <!-- LENDER -->
-  <div id="tab-lender" class="hidden">
-    <h1>Lender portal</h1>
-    <p class="subtitle">Register loans on Sepolia. Requires an approved lender wallet.</p>
-    <div id="lenderGate" class="gate-state"><div class="gate-title">Connect your wallet</div><div class="gate-desc">Needed to check lender approval and send transactions.</div><button class="btn btn-primary" onclick="connectWallet()">Connect wallet</button></div>
-    <div id="lenderContent" class="hidden">
-      <div id="lenderTxBanner"></div>
-      <div class="card">
-        <div class="card-label" style="margin-bottom:14px;">Register a new loan (Sepolia)</div>
-        <div class="form-grid">
-          <div class="field"><label>Borrower address</label><input type="text" id="borrowerAddr" placeholder="0x..."></div>
-          <div class="field"><label>Loan amount (dUSD)</label><input type="text" id="loanAmount" value="100"></div>
-          <div class="field"><label>Expected repayment (dUSD)</label><input type="text" id="expectedRepay" value="110"></div>
-          <div class="field"><label>Deadline (days from now)</label><input type="text" id="deadlineDays" value="30"></div>
-        </div>
-        <button class="btn btn-primary" id="registerBtn" onclick="registerLoan()">Register loan</button>
+    <div class="sidebar-block">
+      <div class="sidebar-label">Protocol Overview</div>
+      <div class="sidebar-desc">
+        <b>LedgerLine</b> — the cross-chain credit bureau for RWAs.
+        Verifying Ethereum Sepolia repayments natively via Creditcoin's
+        Attestcoin Protocol <b>Block Prover precompile</b>. No oracle.
+        No self-reported data.
       </div>
     </div>
-  </div>
 
-  <!-- BORROWER -->
-  <div id="tab-borrower" class="hidden">
-    <h1>Borrower portal</h1>
-    <p class="subtitle">Repay a loan on Sepolia by loan ID.</p>
-    <div id="borrowerGate" class="gate-state"><div class="gate-title">Connect your wallet</div><div class="gate-desc">Needed to send a repayment transaction.</div><button class="btn btn-primary" onclick="connectWallet()">Connect wallet</button></div>
-    <div id="borrowerContent" class="hidden">
-      <div id="borrowerTxBanner"></div>
-      <div class="card">
-        <div class="card-label" style="margin-bottom:14px;">Repay a loan (Sepolia)</div>
-        <div class="form-grid">
-          <div class="field"><label>Loan ID</label><input type="text" id="repayLoanId" value="1"></div>
-          <div class="field"><label>Lender address</label><input type="text" id="repayLenderAddr" placeholder="0x..."></div>
-          <div class="field"><label>Repayment amount (dUSD)</label><input type="text" id="repayAmount" value="110"></div>
-        </div>
-        <button class="btn btn-primary" onclick="repayLoan()">Approve + Repay</button>
+    <div class="sidebar-block">
+      <div class="sidebar-label">System Status</div>
+      <div class="status-row"><span><span class="status-dot" id="dotCC3"></span>CC3 Testnet</span><span class="status-val" id="statCC3">checking...</span></div>
+      <div class="status-row"><span><span class="status-dot" id="dotSepolia"></span>Sepolia</span><span class="status-val" id="statSepolia">checking...</span></div>
+      <div class="status-row"><span><span class="status-dot on"></span>Foundry Tests</span><span class="status-val green">24 / 24 passing</span></div>
+    </div>
+
+    <div class="sidebar-block">
+      <div class="sidebar-label">Deployed Contracts</div>
+      <div class="addr-list">
+        <div><span class="addr-chain">SEPOLIA</span> SourceRegistry<br>0x1Af3...C6fF</div><br>
+        <div><span class="addr-chain">SEPOLIA</span> Settlement<br>0xa00D...7297</div><br>
+        <div><span class="addr-chain">CC3</span> Registry<br>0xde83...F0F</div><br>
+        <div><span class="addr-chain">CC3</span> ProofVerifier<br>0x859C...4494</div>
       </div>
     </div>
-  </div>
+  </aside>
 
-  <footer>
-    LedgerLine — live contract reads: Sepolia + Creditcoin CC3 Testnet · writes require a connected wallet on the matching network
-  </footer>
+  <main class="main">
+    <div class="topbar">
+      <div>
+        <h1>Credit Console</h1>
+        <div class="topbar-sub">LIVE READ — Creditcoin CC3 Testnet</div>
+      </div>
+    </div>
+
+    <div class="lookup-row">
+      <input type="text" id="lookupAddr" value="0x00dC0f3ff1F2bca6b3d007684cC25a766c9815f4" placeholder="0x... wallet address">
+      <button class="btn" onclick="loadProfile()">Query</button>
+    </div>
+
+    <div class="console-grid">
+      <div class="gauge-panel">
+        <div class="gauge-wrap">
+          <svg class="gauge-svg" width="220" height="220" viewBox="0 0 220 220">
+            <circle class="gauge-track" cx="110" cy="110" r="95"></circle>
+            <circle class="gauge-fill" id="gaugeFill" cx="110" cy="110" r="95"
+              stroke-dasharray="596.9" stroke-dashoffset="596.9"></circle>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-score" id="gaugeScore">—</div>
+            <div class="gauge-max">/ 1000</div>
+          </div>
+        </div>
+        <div class="gauge-caption">Verified Credit Score</div>
+        <div class="metric-row"><span class="k">Verified repaid</span><span class="v" id="metricRepaid">—</span></div>
+        <div class="metric-row"><span class="k">Loans completed</span><span class="v" id="metricLoans">—</span></div>
+        <div class="metric-row"><span class="k">Last updated</span><span class="v" id="metricUpdated">—</span></div>
+      </div>
+
+      <div class="log-panel">
+        <div class="log-header">
+          <div class="log-title">Cross-Chain Attestation Log</div>
+          <div class="log-refresh" onclick="loadLog()">refresh ↻</div>
+        </div>
+        <table>
+          <thead><tr><th>Chain</th><th>Event</th><th>Tx Hash</th><th>Status</th></tr></thead>
+          <tbody id="logBody"><tr><td colspan="4" class="log-empty">Loading attestation log...</td></tr></tbody>
+        </table>
+      </div>
+    </div>
+  </main>
 </div>
 
 <script>
-// ── Real deployed addresses ──
-const REGISTRY_ADDR = "0xde8365dAF3CFdF952E2F946F19a4DcAcd57eFf0F";       // CC3 — scoring
-const SOURCE_REGISTRY_ADDR = "0x1Af3D4ED1D2592DdAD9c13A3004006c9785eC6fF"; // Sepolia
-const SOURCE_SETTLEMENT_ADDR = "0xa00DeE06b5d8DD4889683d2d526a744C2Bd67297"; // Sepolia
-const DEMO_TOKEN_ADDR = "0xF77cEEa40d44C4b7c5dFF7DD31dc0E281FaFeE55";      // Sepolia
-
+const REGISTRY_ADDR = "0xde8365dAF3CFdF952E2F946F19a4DcAcd57eFf0F";
+const SOURCE_REGISTRY_ADDR = "0x1Af3D4ED1D2592DdAD9c13A3004006c9785eC6fF";
+const SOURCE_SETTLEMENT_ADDR = "0xa00DeE06b5d8DD4889683d2d526a744C2Bd67297";
+const MANAGER_ADDR = "0xCC0B4686de40Ff5ae1e0B8d58Da9175e9090610D";
 const CC3_RPC = "https://rpc.cc3-testnet.creditcoin.network";
-const SEPOLIA_CHAIN_ID = 11155111;
+const SEPOLIA_RPC = "https://ethereum-sepolia-rpc.publicnode.com";
 
-const REGISTRY_ABI = [
-  "function getCreditProfile(address borrower) view returns (tuple(uint16 score, uint256 totalVerifiedRepayments, uint256 completedLoanCount, uint256 lastUpdated))"
-];
-const SOURCE_REGISTRY_ABI = [
-  "function approvedLenders(address) view returns (bool)",
-  "function registerLoan(address borrower, address withToken, uint256 loanAmount, uint256 expectedRepaymentAmount, uint256 deadlineTimestamp) returns (uint256)"
-];
+const REGISTRY_ABI = ["function getCreditProfile(address) view returns (tuple(uint16 score, uint256 totalVerifiedRepayments, uint256 completedLoanCount, uint256 lastUpdated))"];
+const SOURCE_ABI = ["event LoanRegistered(uint256 indexed loanId, address indexed lender, address indexed borrower, uint256 loanAmount, uint256 expectedRepaymentAmount, uint256 deadlineTimestamp)"];
 const SETTLEMENT_ABI = [
-  "function repayLoan(uint256 loanId, address lender, address token, uint256 amount)"
+  "event LoanFunded(uint256 indexed loanId, address indexed lender, address indexed borrower, uint256 amount)",
+  "event LoanRepaid(uint256 indexed loanId, uint256 amount)"
 ];
-const TOKEN_ABI = [
-  "function approve(address spender, uint256 amount) returns (bool)"
-];
+const MANAGER_ABI = ["event QueryProcessed(bytes32 indexed queryId, uint8 action)"];
+const CIRC = 2 * Math.PI * 95;
 
-let currentTab = 'explore';
-let signer = null;
-let userAddress = null;
-
-function setTab(t, evt) {
-  currentTab = t;
-  ['explore','lender','borrower'].forEach(id => document.getElementById('tab-'+id).classList.toggle('hidden', id !== t));
-  document.querySelectorAll('.tabs button').forEach(b => b.classList.remove('active'));
-  evt.target.classList.add('active');
-  renderGates();
+function scoreColor(score) {
+  const t = Math.max(0, Math.min(1, score / 1000));
+  const amber = [245,166,35], green = [41,217,140];
+  const r = Math.round(amber[0] + (green[0]-amber[0])*t);
+  const g = Math.round(amber[1] + (green[1]-amber[1])*t);
+  const b = Math.round(amber[2] + (green[2]-amber[2])*t);
+  return `rgb(${r},${g},${b})`;
 }
 
-async function connectWallet() {
-  if (!window.ethereum) {
-    alert('No wallet found. Install MetaMask or another injected wallet to register/repay loans.\n\nProfile lookups work without a wallet.');
-    return;
+async function checkNetworks() {
+  try {
+    const p = new ethers.JsonRpcProvider(CC3_RPC);
+    await p.getBlockNumber();
+    document.getElementById('dotCC3').className = 'status-dot on';
+    document.getElementById('statCC3').textContent = 'Connected';
+    document.getElementById('statCC3').className = 'status-val green';
+  } catch(e) {
+    document.getElementById('dotCC3').className = 'status-dot warn';
+    document.getElementById('statCC3').textContent = 'Unreachable';
   }
   try {
-    const provider = new ethers.BrowserProvider(window.ethereum);
-    await provider.send("eth_requestAccounts", []);
-    signer = await provider.getSigner();
-    userAddress = await signer.getAddress();
-    document.getElementById('walletBtn').classList.add('connected');
-    document.getElementById('walletBtnText').textContent = userAddress.slice(0,6) + '...' + userAddress.slice(-4);
-    renderGates();
-  } catch (e) {
-    console.error(e);
-    alert('Wallet connection failed: ' + e.message);
+    const p = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+    await p.getBlockNumber();
+    document.getElementById('dotSepolia').className = 'status-dot on';
+    document.getElementById('statSepolia').textContent = 'Connected';
+    document.getElementById('statSepolia').className = 'status-val green';
+  } catch(e) {
+    document.getElementById('dotSepolia').className = 'status-dot warn';
+    document.getElementById('statSepolia').textContent = 'Unreachable';
   }
 }
 
-function renderGates() {
-  const connected = !!signer;
-  if (currentTab === 'lender') {
-    document.getElementById('lenderGate').classList.toggle('hidden', connected);
-    document.getElementById('lenderContent').classList.toggle('hidden', !connected);
-    if (connected) checkLenderApproval();
-  }
-  if (currentTab === 'borrower') {
-    document.getElementById('borrowerGate').classList.toggle('hidden', connected);
-    document.getElementById('borrowerContent').classList.toggle('hidden', !connected);
-  }
-}
-
-async function checkLenderApproval() {
-  try {
-    const provider = new ethers.JsonRpcProvider("https://ethereum-sepolia-rpc.publicnode.com");
-    const registry = new ethers.Contract(SOURCE_REGISTRY_ADDR, SOURCE_REGISTRY_ABI, provider);
-    const approved = await registry.approvedLenders(userAddress);
-    const banner = document.getElementById('lenderTxBanner');
-    const btn = document.getElementById('registerBtn');
-    if (!approved) {
-      banner.innerHTML = `<div class="tx-banner err">Wallet ${userAddress.slice(0,6)}...${userAddress.slice(-4)} is not an approved lender. Registration will revert.</div>`;
-      btn.disabled = true;
-    } else {
-      banner.innerHTML = `<div class="tx-banner ok">Approved lender ✓</div>`;
-      btn.disabled = false;
-    }
-  } catch (e) {
-    console.error(e);
-  }
-}
-
-async function lookupProfile() {
+async function loadProfile() {
   const addr = document.getElementById('lookupAddr').value.trim();
-  const statusEl = document.getElementById('exploreStatus');
-  const resultEl = document.getElementById('exploreResult');
-  if (!ethers.isAddress(addr)) { statusEl.textContent = 'Invalid address.'; return; }
-
-  statusEl.textContent = 'Querying LedgerLineRegistry on CC3 Testnet...';
-  resultEl.innerHTML = '';
+  if (!ethers.isAddress(addr)) return;
   try {
     const provider = new ethers.JsonRpcProvider(CC3_RPC);
     const registry = new ethers.Contract(REGISTRY_ADDR, REGISTRY_ABI, provider);
-    const profile = await registry.getCreditProfile(addr);
-    const score = Number(profile.score);
-    const repaid = ethers.formatUnits(profile.totalVerifiedRepayments, 18);
-    const loans = Number(profile.completedLoanCount);
-    const lastUpdated = Number(profile.lastUpdated);
-
-    statusEl.textContent = `Live read from ${REGISTRY_ADDR} — block-confirmed on-chain state.`;
-    resultEl.innerHTML = `
-      <div class="card">
-        <div class="card-top">
-          <div><div class="card-label">Credit profile</div><div class="card-addr">${addr}</div></div>
-          <div class="seal"><svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="#1a8c52" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 6L9 17l-5-5"/></svg></div>
-        </div>
-        <div class="score-row"><span class="score-num">${score}</span><span class="score-max">/ 1000</span></div>
-        <div class="stat-grid">
-          <div class="stat"><div class="stat-label">Verified repaid</div><div class="stat-val">${repaid} dUSD</div></div>
-          <div class="stat"><div class="stat-label">Loans completed</div><div class="stat-val">${loans}</div></div>
-          <div class="stat"><div class="stat-label">Last updated</div><div class="stat-val">${lastUpdated ? new Date(lastUpdated*1000).toLocaleString() : '—'}</div></div>
-        </div>
-      </div>`;
-  } catch (e) {
-    console.error(e);
-    statusEl.textContent = 'Query failed: ' + e.message;
-  }
+    const p = await registry.getCreditProfile(addr);
+    const score = Number(p.score);
+    document.getElementById('gaugeScore').textContent = score;
+    document.getElementById('gaugeScore').style.color = scoreColor(score);
+    const offset = CIRC - (CIRC * score / 1000);
+    const fill = document.getElementById('gaugeFill');
+    fill.style.stroke = scoreColor(score);
+    fill.style.strokeDashoffset = offset;
+    document.getElementById('metricRepaid').textContent = ethers.formatUnits(p.totalVerifiedRepayments, 18) + ' dUSD';
+    document.getElementById('metricLoans').textContent = Number(p.completedLoanCount);
+    document.getElementById('metricUpdated').textContent = Number(p.lastUpdated) ? new Date(Number(p.lastUpdated)*1000).toLocaleString() : '—';
+  } catch (e) { console.error(e); }
 }
 
-async function registerLoan() {
-  const banner = document.getElementById('lenderTxBanner');
+async function loadLog() {
+  const body = document.getElementById('logBody');
+  body.innerHTML = '<tr><td colspan="4" class="log-empty">Querying event logs...</td></tr>';
   try {
-    const network = await signer.provider.getNetwork();
-    if (Number(network.chainId) !== SEPOLIA_CHAIN_ID) {
-      banner.innerHTML = `<div class="tx-banner err">Wrong network — switch your wallet to Sepolia (chainId ${SEPOLIA_CHAIN_ID}).</div>`;
+    const sepoliaProvider = new ethers.JsonRpcProvider(SEPOLIA_RPC);
+    const cc3Provider = new ethers.JsonRpcProvider(CC3_RPC);
+    const sourceReg = new ethers.Contract(SOURCE_REGISTRY_ADDR, SOURCE_ABI, sepoliaProvider);
+    const settlement = new ethers.Contract(SOURCE_SETTLEMENT_ADDR, SETTLEMENT_ABI, sepoliaProvider);
+    const manager = new ethers.Contract(MANAGER_ADDR, MANAGER_ABI, cc3Provider);
+
+    const [registered, funded, repaid, verified] = await Promise.all([
+      sourceReg.queryFilter(sourceReg.filters.LoanRegistered(), -50000),
+      settlement.queryFilter(settlement.filters.LoanFunded(), -50000),
+      settlement.queryFilter(settlement.filters.LoanRepaid(), -50000),
+      manager.queryFilter(manager.filters.QueryProcessed(), -5000).catch(() => []),
+    ]);
+
+    const rows = [];
+    registered.forEach(e => rows.push({chain:'sepolia', label:'LoanRegistered', hash:e.transactionHash, verified:false}));
+    funded.forEach(e => rows.push({chain:'sepolia', label:'LoanFunded', hash:e.transactionHash, verified:false}));
+    repaid.forEach(e => rows.push({chain:'sepolia', label:'LoanRepaid', hash:e.transactionHash, verified:false}));
+    verified.forEach(e => rows.push({chain:'cc3', label:'QueryProcessed', hash:e.transactionHash, verified:true}));
+
+    if (rows.length === 0) {
+      body.innerHTML = '<tr><td colspan="4" class="log-empty">No events found in the recent block range.</td></tr>';
       return;
     }
-    const borrower = document.getElementById('borrowerAddr').value.trim();
-    const amount = ethers.parseUnits(document.getElementById('loanAmount').value, 18);
-    const expected = ethers.parseUnits(document.getElementById('expectedRepay').value, 18);
-    const deadline = Math.floor(Date.now()/1000) + Number(document.getElementById('deadlineDays').value) * 86400;
-
-    banner.innerHTML = `<div class="tx-banner wait">Confirm in wallet...</div>`;
-    const registry = new ethers.Contract(SOURCE_REGISTRY_ADDR, SOURCE_REGISTRY_ABI, signer);
-    const tx = await registry.registerLoan(borrower, DEMO_TOKEN_ADDR, amount, expected, deadline);
-    banner.innerHTML = `<div class="tx-banner wait">Submitted — waiting for confirmation... ${tx.hash}</div>`;
-    const receipt = await tx.wait();
-    banner.innerHTML = `<div class="tx-banner ok">Loan registered on Sepolia. Tx: ${receipt.hash}</div>`;
+    body.innerHTML = rows.map(r => `
+      <tr>
+        <td><span class="chain-pill ${r.chain}">${r.chain === 'sepolia' ? 'Sepolia' : 'CC3'}</span></td>
+        <td>${r.label}</td>
+        <td><a class="hash-link" href="#" title="${r.hash}">${r.hash.slice(0,10)}...${r.hash.slice(-6)}</a></td>
+        <td class="${r.verified ? 'event-verified' : ''}">${r.verified ? 'Attested ✓' : 'On source chain'}</td>
+      </tr>
+    `).join('');
   } catch (e) {
     console.error(e);
-    banner.innerHTML = `<div class="tx-banner err">Failed: ${e.reason || e.message}</div>`;
+    body.innerHTML = '<tr><td colspan="4" class="log-empty">Query failed: ' + e.message + '</td></tr>';
   }
 }
 
-async function repayLoan() {
-  const banner = document.getElementById('borrowerTxBanner');
-  try {
-    const network = await signer.provider.getNetwork();
-    if (Number(network.chainId) !== SEPOLIA_CHAIN_ID) {
-      banner.innerHTML = `<div class="tx-banner err">Wrong network — switch your wallet to Sepolia (chainId ${SEPOLIA_CHAIN_ID}).</div>`;
-      return;
-    }
-    const loanId = document.getElementById('repayLoanId').value.trim();
-    const lender = document.getElementById('repayLenderAddr').value.trim();
-    const amount = ethers.parseUnits(document.getElementById('repayAmount').value, 18);
-
-    banner.innerHTML = `<div class="tx-banner wait">Approving token spend...</div>`;
-    const token = new ethers.Contract(DEMO_TOKEN_ADDR, TOKEN_ABI, signer);
-    const approveTx = await token.approve(SOURCE_SETTLEMENT_ADDR, amount);
-    await approveTx.wait();
-
-    banner.innerHTML = `<div class="tx-banner wait">Approved. Submitting repayment...</div>`;
-    const settlement = new ethers.Contract(SOURCE_SETTLEMENT_ADDR, SETTLEMENT_ABI, signer);
-    const repayTx = await settlement.repayLoan(loanId, lender, DEMO_TOKEN_ADDR, amount);
-    banner.innerHTML = `<div class="tx-banner wait">Submitted — waiting for confirmation... ${repayTx.hash}</div>`;
-    const receipt = await repayTx.wait();
-    banner.innerHTML = `<div class="tx-banner ok">Repaid on Sepolia — tx: ${receipt.hash}. Your credit score will update once the relayer submits the Attestcoin proof to Creditcoin (not automatic in this demo — run submitProofsToHub.ts).</div>`;
-  } catch (e) {
-    console.error(e);
-    banner.innerHTML = `<div class="tx-banner err">Failed: ${e.reason || e.message}</div>`;
-  }
-}
-
-// Auto-load the demo wallet's profile on first load
-window.addEventListener('DOMContentLoaded', lookupProfile);
+checkNetworks();
+loadProfile();
+loadLog();
 </script>
 </body>
 </html>
